@@ -7,16 +7,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+//#include "PQueue.h"
 
-typedef struct node *link;
+#define N 256
 
-struct node
-{
-    int freq;
-    char val;
-    link next;
-    link prev;
-};
+int *pq;
+int length, size;
 
 void initializePriorityQueue(int sizeOfQueue);
 //after this function is called, your heap based priority queue condition must be satisfied.
@@ -26,25 +22,30 @@ void insertInPriorityQueue(int v);
 //see above note for the condition
 int getMaximumPriorityItem();
 
-link queue;
-
 main()
 {
-
+    return 0;
 };
 
 void initializePriorityQueue(int sizeOfQueue)
 {
-
+    length = sizeOfQueue;
+    pq = malloc(sizeof(int)*sizeOfQueue);
 };
 
 void insertInPriorityQueue(int v)
 {
-
+    size++;
+    int tempA = v;
+    int i,j;
+    for (i=0;i<size-1 && tempA<pq[i];i++);
+    for (j=i;j<size;j++)
+    {
+        int tempB = pq[j];
+        pq[j]=tempA;
+        tempA=tempB;
+    }
 };
 
-int getMaximumPriorityItem()
-{
-
-};
+int getMaximumPriorityItem() {return pq[--size];};
 
