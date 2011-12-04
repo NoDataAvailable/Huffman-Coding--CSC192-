@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "PQueue.h"
 
 #define N 256
 #define BIN 10
@@ -29,11 +28,7 @@ struct node
 };
 
 void initializePriorityQueue(int sizeOfQueue);
-//after this function is called, your heap based priority queue condition must be satisfied.
-//see above note for the condition
 void insertInPriorityQueue(link v);
-//after this function is called, your heap based priority queue condition must be satisfied.
-//see above note for the condition
 link getMaximumPriorityItem();
 char *getBin(link leaf);
 
@@ -51,21 +46,24 @@ int main(int argc, char * argv[])
     inStr = malloc(sizeof(char));
     inStr[0] = '\0';
 
-    if (fp = fopen(argv[1],"r"))
+    //printf("DEBUG 1\n");
+
+    if (fp = fopen("inFile.txt","r"))//argv[1],"r"))
     {
         char ch;
-        while (!feof(fp))
+        ch = fgetc(fp);
+        while (!feof(fp))// && ch != '\n')
         {
             char *temp = inStr;
             strSize++;
             inStr = malloc((strSize+1)*sizeof(char));
             strcpy(inStr,temp);
             free(temp);
-            ch = fgetc(fp);
-            //printf("%c, %d\n",ch, (int)ch);
+            //ch = fgetc(fp);
             inStr[strSize-1]=ch;
             inStr[strSize]='\0';
             freqs[ch]++;
+            ch = fgetc(fp);
         };
 
     }
@@ -74,11 +72,11 @@ int main(int argc, char * argv[])
         printf("Could not open file!\n");
         exit(EXIT_FAILURE);
     }
-
-    //printf(inStr);
+    fclose(fp);
 
     initializePriorityQueue(N);
 
+    //printf("DEBUG 2\n");
 
     int j;
     for (j=0;j<N;j++)
@@ -91,8 +89,9 @@ int main(int argc, char * argv[])
             newNode->left = NULL;
             newNode->right = NULL;
             insertInPriorityQueue(newNode);
-            //printf("Size: %d\n",size);
         };
+
+    //printf("DEBUG 3\n");
 
     unique = size;
     storage = malloc(unique*sizeof(struct node));
@@ -102,15 +101,6 @@ int main(int argc, char * argv[])
     {
         storage[k] = pq[k];//size;
     };
-
-    /*for (k=0;size!=0;k++)
-    {
-        printf("Size: %d/%d\n",k,size);
-        struct node next = getMaximumPriorityItem();
-        printf("%d, %c\n", next.freq, next.value);
-    };*/
-
-
 
     while (size!=0)
     {
@@ -134,21 +124,55 @@ int main(int argc, char * argv[])
         };
     };
 
-    printf("Freq:  %d\n",root->left->right->freq);
-    printf("Value: %c\n",root->left->right->value);
+    //printf("DEBUG 4\n");
 
-    // I got a Huffman tree, what now b*tches?
-
-    binStr = malloc(unique*sizeof(char*));
-
-
+    binStr = malloc(N*sizeof(char*));
 
     int l;
     for (l=0;l<unique;l++)
-        binStr[l]=getBin(storage[l]);
+        binStr[(int)storage[l]->value]=getBin(storage[l]);
 
-    for (l=0;l<unique;l++)
-        printf("%c, %s\n",storage[l]->value,binStr[l]);
+    fp = fopen("outFile.txt","w");
+
+    int r;
+    for (r=2;r<N;r++)
+        if (binStr[r]!=NULL)
+        {
+            printf("%2c : %3d : %15s\n", (char)r, freqs[r], binStr[r]);
+            fprintf(fp,"%2c : %3d : %15s\n", (char)r, freqs[r], binStr[r]);
+        };
+
+
+    char *output;
+    output = malloc(sizeof(char));
+    output[0] = '\0';
+
+    int s;
+    for (s=0;s<strSize;s++)
+    {
+        char *temp, *addition;
+        temp = output;
+        addition = binStr[inStr[s]];
+        int origSize = strlen(output);
+        int addSize = strlen(addition);
+        int newSize = origSize + addSize;
+        output = malloc((newSize+1)*sizeof(char));
+        strcpy(output,temp);
+        strcpy(output+origSize, addition);
+        output[newSize] = '\0';
+        free(temp);
+    };
+
+    printf("\n");
+    printf(inStr);
+    printf("\n");
+    printf(output);
+
+    fprintf(fp,"\n");
+    fprintf(fp,inStr);
+    fprintf(fp,"\n");
+    fprintf(fp,output);
+    fclose(fp);
 
     return 0;
 };
@@ -177,7 +201,6 @@ link getMaximumPriorityItem() {return pq[--size];};
 
 char *getBin(link leaf)
 {
-    printf("leaf: %c\n",leaf->value);
     char *bin = malloc(BIN*sizeof(char));
     link runner = leaf;
     int i=1;
