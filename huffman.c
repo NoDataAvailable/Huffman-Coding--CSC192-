@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
     {
         char ch;
         ch = fgetc(fp);
-        while (!feof(fp))// && ch != '\n')
+        while (!feof(fp) && ch != '\n')
         {
             char *temp = inStr;
             strSize++;
