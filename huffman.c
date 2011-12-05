@@ -9,16 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define N 256
-#define BIN 10
+#define N 257 // Number of possible ASCII values
+#define BIN 15 // Max length alloted fot a binary string for a character
 
 typedef struct node *link;
 
-link *pq, *storage;
-char **binStr;
-int length, size, unique;
+link *pq, *storage; // the priority queue (and its copy)
+char **binStr; // Array that will contain all of the binary strings corresponding to chars
+int length, size, unique; // Variables for tracking the priority queue and number of unique chars
 
-struct node
+struct node // tree node definition
 {
     char value;
     int freq;
@@ -27,40 +27,38 @@ struct node
     link parent;
 };
 
-void initializePriorityQueue(int sizeOfQueue);
+void initializePriorityQueue(int sizeOfQueue); // Priority queue functions (Array based)
 void insertInPriorityQueue(link v);
 link getMaximumPriorityItem();
-char *getBin(link leaf);
+char *getBin(link leaf); // Function to determine the binary representation of a char
 
 int main(int argc, char * argv[])
 {
     FILE *fp;
     int strSize = 0;
-    char *inStr;
-    int freqs[N];
-    int i;
+    char *inStr; // incoming string (stored to avoid re-reading)
+    int freqs[N]; // frequencies of chars (char value used as indecies)
 
-    for (i=0;i<N;i++) freqs[i]=0;
-    inStr = malloc(sizeof(char));
+    int i;
+    for (i=0;i<N;i++) freqs[i]=0; // initializes frequencies as 0
+
+    inStr = malloc(sizeof(char)); // Ensures the incoming string exists and prevents errors if nothing is read
     inStr[0] = '\0';
 
-    //printf("DEBUG 1\n");
-
-    if ((fp = fopen("inFile.txt","r")))//argv[1],"r"))
+    if ((fp = fopen(argv[1],"r"))) //ensures file is open (or else kills in the else statement)
     {
         char ch;
-        ch = fgetc(fp);
+        ch = fgetc(fp); //initial read of ch is needed
         while (!feof(fp) && ch != '\n')
         {
-            char *temp = inStr;
+            char *temp = inStr; // Needed for memory freeing
             strSize++;
-            inStr = malloc((strSize+1)*sizeof(char));
+            inStr = malloc((strSize+1)*sizeof(char)); // Dynamic string length required
             strcpy(inStr,temp);
-            free(temp);
-            //ch = fgetc(fp);
-            inStr[strSize-1]=ch;
-            inStr[strSize]='\0';
-            freqs[(int)ch]++;
+            free(temp); // Prevent memory leaks
+            inStr[strSize-1]=ch; 
+            inStr[strSize]='\0'; // makes the array a string by adding the null char
+            freqs[(int)ch]++; // increase the frequency of the read character
             ch = fgetc(fp);
         };
 
@@ -70,82 +68,63 @@ int main(int argc, char * argv[])
         printf("Could not open file!\n");
         exit(EXIT_FAILURE);
     }
-    fclose(fp);
+    fclose(fp); // Close the file
 
     initializePriorityQueue(N);
 
-    //printf("DEBUG 2\n");
-
     int j;
     for (j=0;j<N;j++)
-        if (freqs[j])
+        if (freqs[j]) // Only make nodes for non-zero frequencies
         {
             link newNode;
             newNode = malloc(sizeof(struct node));
             newNode->value = (char)j;
             newNode->freq = freqs[j];
-            newNode->left = NULL;
+            newNode->left = NULL; // All char nodes are leaf nodes
             newNode->right = NULL;
-            insertInPriorityQueue(newNode);
+            insertInPriorityQueue(newNode); //  All nodes sorted in priority queue
         };
 
-    //printf("DEBUG 3\n");
+    unique = size; // initial priority queue size must equal the number of unique chars
 
-    unique = size;
-    storage = malloc(unique*sizeof(struct node));
-
+    storage = malloc(unique*sizeof(struct node)); // the priority queue is copied for future use 
     int k;
     for (k=0;k<unique;k++)
-    {
-        storage[k] = pq[k];//size;
-    };
+        storage[k] = pq[k];
 
-    while (size!=0)
+    while (size!=0) // The tree is built in accordance with the assignment
     {
         if (size > 1)
         {
-        link a,b;
-        a = getMaximumPriorityItem();
-        b = getMaximumPriorityItem();
-        link n;
-        n = malloc(sizeof(struct node));
-        n->freq = (a->freq+b->freq);
-        n->value = (char)(n->freq);
-        n->left = a;
-        n->right = b;
-        a->parent=b->parent=n;
-        insertInPriorityQueue(n);
+       	    link a,b;
+            a = getMaximumPriorityItem();
+            b = getMaximumPriorityItem();
+            link n; // n is the parent of the two top priority items
+            n = malloc(sizeof(struct node));
+            n->freq = (a->freq+b->freq);
+            n->value = (char)(n->freq);
+            n->left = a;
+            n->right = b;
+            a->parent=b->parent=n;
+            insertInPriorityQueue(n); // n put into the priority queue
         }
         else
         {
-            getMaximumPriorityItem();
+            getMaximumPriorityItem(); // Final node must be removed for some reason
         };
     };
 
-    //printf("DEBUG 4\n");
+    binStr = malloc(N*sizeof(char*)); // array of binary strings (index is a char)
 
-    binStr = malloc(N*sizeof(char*));
-
-    int l;
+    int l; // propogate the list of binary strings
     for (l=0;l<unique;l++)
         binStr[(int)storage[l]->value]=getBin(storage[l]);
 
-    fp = fopen("outFile.txt","w");
-
-    int r;
-    for (r=2;r<N;r++)
-        if (binStr[r]!=NULL)
-        {
-            printf("%2c : %3d : %15s\n", (char)r, freqs[r], binStr[r]);
-            fprintf(fp,"%2c : %3d : %15s\n", (char)r, freqs[r], binStr[r]);
-        };
-
-
-    char *output;
+    char *output; // starts propagating the output string
     output = malloc(sizeof(char));
     output[0] = '\0';
 
-    int s;
+    int s; // The input string is parsed and for each  char, the appropriate binary string is added to the output
     for (s=0;s<strSize;s++)
     {
         char *temp, *addition;
@@ -154,23 +133,15 @@ int main(int argc, char * argv[])
         int origSize = strlen(output);
         int addSize = strlen(addition);
         int newSize = origSize + addSize;
-        output = malloc((newSize+1)*sizeof(char));
+        output = malloc((newSize+1)*sizeof(char)); // new, longer output is needed
         strcpy(output,temp);
-        strcpy(output+origSize, addition);
+        strcpy(output+origSize, addition); // concatinates the new string to output
         output[newSize] = '\0';
         free(temp);
     };
 
-    printf("\n");
-    printf(inStr);
-    printf("\n");
     printf(output);
-
-    fprintf(fp,"\n");
-    fprintf(fp,inStr);
-    fprintf(fp,"\n");
-    fprintf(fp,output);
-    fclose(fp);
+    printf("\n");
 
     return 0;
 };
@@ -186,8 +157,8 @@ void insertInPriorityQueue(link v)
     size++;
     link tempA = v;
     int i,j;
-    for (i=0;i<size-1 && (tempA->freq)<(pq[i]->freq);i++);
-    for (j=i;j<size;j++)
+    for (i=0; i<size-1 && (tempA->freq) < (pq[i]->freq); i++); // locates the appropriate insertion spot
+    for (j=i; j<size; j++) // shifts all entries after the new item
     {
         link tempB = pq[j];
         pq[j]=tempA;
@@ -197,13 +168,13 @@ void insertInPriorityQueue(link v)
 
 link getMaximumPriorityItem() {return pq[--size];};
 
-char *getBin(link leaf)
+char *getBin(link leaf) // traces (backwards) the tree to determine the binary string
 {
     char *bin = malloc(BIN*sizeof(char));
     link runner = leaf;
     int i=1;
     bin[BIN-1]= '\0';
-    while(runner->parent)
+    while(runner->parent) // Each bit is put at the beginning of the string as the function traces UP the tree
     {
         if (runner->parent->right == runner)
             bin[BIN-1-i] = '1';
@@ -212,7 +183,7 @@ char *getBin(link leaf)
         runner = runner->parent;
         i++;
     }
-    strcpy(bin,bin+BIN-i);
+    strcpy(bin,bin+BIN-i); // shifts the beginning string to bin
     return bin;
 };
 
