@@ -1,0 +1,8 @@
+struct point bottRight, topLeft;
+bottRight.x = 20;
+bottRight.y = 15;
+topLeft.x = 10;
+topLeft.y = 25;
+p = malloc(sizeof(struct rectangle));
+p->upper_left = topLeft;
+p->lower_right = bottRight;

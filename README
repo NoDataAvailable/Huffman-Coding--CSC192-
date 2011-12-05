@@ -1,3 +1,6 @@
 Huffman Coding
 CSC192 Assignment 5
 Roberto Bortolussi
+
+Done using an array-based priority queue.
+Does not work for large files.
