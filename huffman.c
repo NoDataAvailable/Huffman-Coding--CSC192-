@@ -40,8 +40,6 @@ int main(int argc, char * argv[])
     int freqs[N];
     int i;
 
-    link root;
-
     for (i=0;i<N;i++) freqs[i]=0;
     inStr = malloc(sizeof(char));
     inStr[0] = '\0';
