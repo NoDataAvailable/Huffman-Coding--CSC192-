@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
 
     //printf("DEBUG 1\n");
 
-    if (fp = fopen("inFile.txt","r"))//argv[1],"r"))
+    if ((fp = fopen("inFile.txt","r")))//argv[1],"r"))
     {
         char ch;
         ch = fgetc(fp);
@@ -62,7 +62,7 @@ int main(int argc, char * argv[])
             //ch = fgetc(fp);
             inStr[strSize-1]=ch;
             inStr[strSize]='\0';
-            freqs[ch]++;
+            freqs[(int)ch]++;
             ch = fgetc(fp);
         };
 
@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
         }
         else
         {
-            root = getMaximumPriorityItem();
+            getMaximumPriorityItem();
         };
     };
 
@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
     {
         char *temp, *addition;
         temp = output;
-        addition = binStr[inStr[s]];
+        addition = binStr[(int)inStr[s]];
         int origSize = strlen(output);
         int addSize = strlen(addition);
         int newSize = origSize + addSize;
